@@ -8,23 +8,19 @@ import (
 	"github.com/Viquad/crud-app/internal/repository/psql"
 	"github.com/Viquad/crud-app/internal/service"
 	"github.com/Viquad/crud-app/internal/transport/rest"
+	"github.com/Viquad/crud-app/pkg/config"
 	"github.com/Viquad/crud-app/pkg/database"
 )
 
 func Run() {
-	db, err := database.NewPostgresConnection(
-		database.ConnectionInfo{
-			Host:     "localhost",
-			Port:     5432,
-			Username: "postgres",
-			DBName:   "postgres",
-			SSLMode:  "disable",
-			Password: "qwerty123",
-		},
-	)
-
+	cfg, err := config.New("configs", "config")
 	if err != nil {
-		log.Fatalf("Failed connect to DB %s", err.Error())
+		log.Fatalf("can't initialize config: %s", err.Error())
+	}
+
+	db, err := database.NewPostgresConnection(cfg.DB)
+	if err != nil {
+		log.Fatalf("can't connect to DB %s", err.Error())
 	}
 
 	defer db.Close()
