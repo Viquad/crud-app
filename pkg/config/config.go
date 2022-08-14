@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+
 	"github.com/Viquad/crud-app/pkg/database"
 	"github.com/spf13/viper"
 )
@@ -23,6 +25,8 @@ func New(path, name string) (*Config, error) {
 	if err := v.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}
+
+	cfg.DB.Password = os.Getenv("POSTGRES_PASSWORD")
 
 	return &cfg, nil
 }
