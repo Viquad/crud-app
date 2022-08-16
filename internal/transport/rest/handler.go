@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -13,21 +12,13 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type Bank interface {
-	CreateAccount(ctx context.Context, account domain.Account) error
-	ReadAccount(ctx context.Context, id int64) (domain.Account, error)
-	ReadAllAccounts(ctx context.Context) ([]domain.Account, error)
-	UpdateAccount(ctx context.Context, id int64, inp domain.AccountUpdateInput) error
-	DeleteAccount(ctx context.Context, id int64) error
-}
-
 type Handler struct {
-	bankService Bank
+	accountService domain.AccountService
 }
 
-func NewHandler(bank Bank) *Handler {
+func NewHandler(s domain.Services) *Handler {
 	return &Handler{
-		bankService: bank,
+		accountService: s.GetAccountService(),
 	}
 }
 
@@ -53,19 +44,29 @@ func (h *Handler) CreateAccount(w http.ResponseWriter, r *http.Request, ps httpr
 		return
 	}
 
-	var account domain.Account
-	if err = json.Unmarshal(b, &account); err != nil {
+	account := new(domain.Account)
+	if err = json.Unmarshal(b, account); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Printf("[REST][ERROR] %s", err.Error())
 		return
 	}
 
-	if err = h.bankService.CreateAccount(r.Context(), account); err != nil {
+	account, err = h.accountService.Create(r.Context(), *account)
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("[REST][ERROR] %s", err.Error())
 		return
 	}
 
+	response, err := json.Marshal(account)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("[REST][ERROR] %s", err.Error())
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(response)
 	w.WriteHeader(http.StatusCreated)
 	log.Printf("[REST] %d", http.StatusCreated)
 }
@@ -79,9 +80,14 @@ func (h *Handler) ReadAccount(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 
-	account, err := h.bankService.ReadAccount(r.Context(), id)
+	account, err := h.accountService.GetById(r.Context(), id)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		switch {
+		case errors.Is(err, domain.ErrNotExist):
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 		log.Printf("[REST][ERROR] %s", err.Error())
 		return
 	}
@@ -100,7 +106,7 @@ func (h *Handler) ReadAccount(w http.ResponseWriter, r *http.Request, ps httprou
 
 func (h *Handler) ReadAllAccounts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	log.Printf("[REST] - ReadAllAccounts()")
-	accounts, err := h.bankService.ReadAllAccounts(r.Context())
+	accounts, err := h.accountService.All(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("[REST][ERROR] %s", err.Error())
@@ -124,7 +130,7 @@ func (h *Handler) UpdateAccount(w http.ResponseWriter, r *http.Request, ps httpr
 	id, err := parseId(ps)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("[REST][ERROR] %s", err.Error())
+
 		return
 	}
 
@@ -135,19 +141,34 @@ func (h *Handler) UpdateAccount(w http.ResponseWriter, r *http.Request, ps httpr
 		return
 	}
 
-	var account domain.AccountUpdateInput
-	if err = json.Unmarshal(b, &account); err != nil {
+	var input domain.AccountUpdateInput
+	if err = json.Unmarshal(b, &input); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Printf("[REST][ERROR] %s", err.Error())
 		return
 	}
 
-	if err = h.bankService.UpdateAccount(r.Context(), id, account); err != nil {
+	account, err := h.accountService.Update(r.Context(), id, input)
+	if err != nil {
+		switch {
+		case errors.Is(err, domain.ErrUpdateFailed):
+			w.WriteHeader(http.StatusBadRequest)
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		log.Printf("[REST][ERROR] %s", err.Error())
+		return
+	}
+
+	response, err := json.Marshal(account)
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("[REST][ERROR] %s", err.Error())
 		return
 	}
 
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(response)
 	w.WriteHeader(http.StatusOK)
 	log.Printf("[REST] %d", http.StatusOK)
 }
@@ -161,8 +182,13 @@ func (h *Handler) DeleteAccount(w http.ResponseWriter, r *http.Request, ps httpr
 		return
 	}
 
-	if err := h.bankService.DeleteAccount(r.Context(), id); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+	if err := h.accountService.Delete(r.Context(), id); err != nil {
+		switch {
+		case errors.Is(err, domain.ErrDeleteFailed):
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 		log.Printf("[REST][ERROR] %s", err.Error())
 		return
 	}

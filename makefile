@@ -12,7 +12,7 @@ run:
 stop:
 	docker compose down
 	
-clean:
+clean: stop
 	docker image rm crud-app_backend
 
 docker: wait-postgres migrate

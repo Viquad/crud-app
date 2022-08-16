@@ -2,6 +2,7 @@ package domain
 
 import "time"
 
+// TODO: still not implemented
 type Transaction struct {
 	Id          int64
 	AccountId   int64

@@ -25,9 +25,9 @@ func Run() {
 
 	defer db.Close()
 
-	repo := psql.NewBank(db)
-	service := service.NewBank(repo)
-	handler := rest.NewHandler(service)
+	repo := psql.NewRepositories(db)
+	services := service.NewServices(repo)
+	handler := rest.NewHandler(services)
 
 	srv := &http.Server{
 		Addr:    ":8080",
