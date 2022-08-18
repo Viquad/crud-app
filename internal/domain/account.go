@@ -6,19 +6,19 @@ import (
 )
 
 type Account struct {
-	Id         int64     `json:"id"`
-	FirstName  string    `json:"firstName"`
-	LastName   string    `json:"lastName"`
-	Balance    int64     `json:"balance"`
-	Currency   string    `json:"currency"`
-	LastUpdate time.Time `json:"lastUpdate"`
+	Id         int64     `form:"id" json:"id"`
+	FirstName  string    `form:"firstName" json:"firstName" binding:"required"`
+	LastName   string    `form:"lastName" json:"lastName" binding:"required"`
+	Balance    int64     `form:"balance" json:"balance" binding:"required"`
+	Currency   string    `form:"currency" json:"currency" binding:"required"`
+	LastUpdate time.Time `form:"lastUpdate" json:"lastUpdate"`
 }
 
 type AccountUpdateInput struct {
-	FirstName *string `json:"firstName"`
-	LastName  *string `json:"lastName"`
-	Balance   *int64  `json:"balance"`
-	Currency  *string `json:"currency"`
+	FirstName *string `form:"firstName" json:"firstName"`
+	LastName  *string `form:"lastName" json:"lastName"`
+	Balance   *int64  `form:"balance" json:"balance"`
+	Currency  *string `form:"currency" json:"currency"`
 }
 
 type AccountService interface {
