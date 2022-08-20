@@ -16,6 +16,13 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// @title       CRUD app API
+// @version     1.0
+// @description API Server for CRUD application
+
+// @host     localhost:8080
+// @BasePath /
+
 func init() {
 	// Log as JSON instead of the default ASCII formatter.
 	logrus.SetFormatter(&logrus.JSONFormatter{})

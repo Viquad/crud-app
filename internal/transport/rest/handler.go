@@ -22,6 +22,7 @@ func (h *Handler) InitRouter() *gin.Engine {
 
 	router.Use(Logger(), gin.Recovery())
 
+	h.initSwagger(&router.RouterGroup)
 	h.initAccount(&router.RouterGroup)
 
 	return router
