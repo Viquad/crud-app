@@ -7,15 +7,15 @@ import (
 )
 
 type Repositories struct {
-	Account *AccountRepository
+	accountRepository *AccountRepository
 }
 
-func (r *Repositories) GetAccountRepository() domain.AccountRepository {
-	return r.Account
+func (rs *Repositories) GetAccountRepository() domain.AccountRepository {
+	return rs.accountRepository
 }
 
 func NewRepositories(db *sql.DB) *Repositories {
 	return &Repositories{
-		Account: NewAccount(db),
+		accountRepository: NewAccountRepository(db),
 	}
 }

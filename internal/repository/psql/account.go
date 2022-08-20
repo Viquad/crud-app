@@ -15,7 +15,7 @@ type AccountRepository struct {
 	db *sql.DB
 }
 
-func NewAccount(db *sql.DB) *AccountRepository {
+func NewAccountRepository(db *sql.DB) *AccountRepository {
 	return &AccountRepository{
 		db: db,
 	}
@@ -53,7 +53,7 @@ func (b *AccountRepository) GetById(ctx context.Context, id int64) (*domain.Acco
 	return &account, nil
 }
 
-func (b *AccountRepository) All(ctx context.Context) ([]domain.Account, error) {
+func (b *AccountRepository) List(ctx context.Context) ([]domain.Account, error) {
 	var accounts []domain.Account
 	query := "SELECT id, first_name, last_name, balance, currency, last_update FROM accounts"
 	rows, err := b.db.QueryContext(ctx, query)
@@ -74,7 +74,7 @@ func (b *AccountRepository) All(ctx context.Context) ([]domain.Account, error) {
 	return accounts, nil
 }
 
-func (b *AccountRepository) Update(ctx context.Context, id int64, inp domain.AccountUpdateInput) (*domain.Account, error) {
+func (b *AccountRepository) UpdateById(ctx context.Context, id int64, inp domain.AccountUpdateInput) (*domain.Account, error) {
 	setValues := make([]string, 0)
 	args := make([]interface{}, 0)
 	argIndex := 1
@@ -113,7 +113,7 @@ func (b *AccountRepository) Update(ctx context.Context, id int64, inp domain.Acc
 	return account, nil
 }
 
-func (b *AccountRepository) Delete(ctx context.Context, id int64) error {
+func (b *AccountRepository) DeleteById(ctx context.Context, id int64) error {
 	res, err := b.db.ExecContext(ctx, "DELETE FROM accounts WHERE id=$1", id)
 	if err != nil {
 		return err

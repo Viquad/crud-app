@@ -5,14 +5,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Handler struct {
-	accountService domain.AccountService
+type Services interface {
+	GetAccountService() domain.AccountService
 }
 
-func NewHandler(s domain.Services) *Handler {
-	return &Handler{
-		accountService: s.GetAccountService(),
-	}
+type Handler struct {
+	services Services
+}
+
+func NewHandler(s Services) *Handler {
+	return &Handler{s}
 }
 
 func (h *Handler) InitRouter() *gin.Engine {

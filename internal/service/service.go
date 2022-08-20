@@ -4,16 +4,20 @@ import (
 	"github.com/Viquad/crud-app/internal/domain"
 )
 
+type Repositories interface {
+	GetAccountRepository() domain.AccountRepository
+}
+
 type Services struct {
-	Account *AccountService
+	accountService *AccountService
 }
 
-func (s *Services) GetAccountService() domain.AccountService {
-	return s.Account
+func (ss *Services) GetAccountService() domain.AccountService {
+	return ss.accountService
 }
 
-func NewServices(repo domain.Repositories) *Services {
+func NewServices(repo Repositories) *Services {
 	return &Services{
-		Account: NewAccountService(repo.GetAccountRepository()),
+		accountService: NewAccountService(repo.GetAccountRepository()),
 	}
 }

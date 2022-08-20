@@ -23,16 +23,16 @@ type AccountUpdateInput struct {
 
 type AccountService interface {
 	Create(ctx context.Context, account Account) (*Account, error)
-	All(ctx context.Context) ([]Account, error)
+	List(ctx context.Context) ([]Account, error)
 	GetById(ctx context.Context, id int64) (*Account, error)
-	Update(ctx context.Context, id int64, inp AccountUpdateInput) (*Account, error)
-	Delete(ctx context.Context, id int64) error
+	UpdateById(ctx context.Context, id int64, inp AccountUpdateInput) (*Account, error)
+	DeleteById(ctx context.Context, id int64) error
 }
 
 type AccountRepository interface {
 	Create(ctx context.Context, account Account) (*Account, error)
-	All(ctx context.Context) ([]Account, error)
+	List(ctx context.Context) ([]Account, error)
 	GetById(ctx context.Context, id int64) (*Account, error)
-	Update(ctx context.Context, id int64, inp AccountUpdateInput) (*Account, error)
-	Delete(ctx context.Context, id int64) error
+	UpdateById(ctx context.Context, id int64, inp AccountUpdateInput) (*Account, error)
+	DeleteById(ctx context.Context, id int64) error
 }

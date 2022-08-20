@@ -30,7 +30,7 @@ func (h *Handler) CreateAccount(c *gin.Context) {
 		return
 	}
 
-	account, err := h.accountService.Create(c.Request.Context(), *account)
+	account, err := h.services.GetAccountService().Create(c.Request.Context(), *account)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, "CreateAccount()", "service error", err.Error())
 		return
@@ -46,7 +46,7 @@ func (h *Handler) GetAccountById(c *gin.Context) {
 		return
 	}
 
-	account, err := h.accountService.GetById(c.Request.Context(), id)
+	account, err := h.services.GetAccountService().GetById(c.Request.Context(), id)
 	if err != nil {
 		context, problem := "GetAccountById()", "service error"
 		switch {
@@ -62,7 +62,7 @@ func (h *Handler) GetAccountById(c *gin.Context) {
 }
 
 func (h *Handler) GetAccounts(c *gin.Context) {
-	accounts, err := h.accountService.All(c.Request.Context())
+	accounts, err := h.services.GetAccountService().List(c.Request.Context())
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, "GetAccounts()", "service error", err.Error())
 		return
@@ -84,7 +84,7 @@ func (h *Handler) UpdateAccount(c *gin.Context) {
 		return
 	}
 
-	account, err := h.accountService.Update(c.Request.Context(), id, input)
+	account, err := h.services.GetAccountService().UpdateById(c.Request.Context(), id, input)
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrUpdateFailed):
@@ -105,7 +105,7 @@ func (h *Handler) DeleteAccount(c *gin.Context) {
 		return
 	}
 
-	if err := h.accountService.Delete(c.Request.Context(), id); err != nil {
+	if err := h.services.GetAccountService().DeleteById(c.Request.Context(), id); err != nil {
 		switch {
 		case errors.Is(err, domain.ErrDeleteFailed):
 			newErrorResponse(c, http.StatusNotFound, "DeleteAccount()", "service error", err.Error())
@@ -130,4 +130,3 @@ func parseId(c *gin.Context) (int64, error) {
 
 	return id, err
 }
- 
