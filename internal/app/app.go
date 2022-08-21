@@ -12,6 +12,7 @@ import (
 	"github.com/Viquad/crud-app/internal/transport/rest"
 	"github.com/Viquad/crud-app/pkg/config"
 	"github.com/Viquad/crud-app/pkg/database"
+	cache "github.com/Viquad/simple-cache"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 )
@@ -24,15 +25,9 @@ import (
 // @BasePath /
 
 func init() {
-	// Log as JSON instead of the default ASCII formatter.
 	logrus.SetFormatter(&logrus.JSONFormatter{})
-
-	// Output to stdout instead of the default stderr
-	// Can be any io.Writer, see below for File example
 	logrus.SetOutput(os.Stdout)
-
-	// Only log the warning severity or above.
-	logrus.SetLevel(logrus.InfoLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 }
 
 func Run() {
@@ -64,8 +59,9 @@ func Run() {
 
 	defer db.Close()
 
+	cache := cache.NewMemoryCache()
 	repo := psql.NewRepositories(db)
-	services := service.NewServices(repo)
+	services := service.NewServices(repo, cache, cfg.Cache.TTL)
 	handler := rest.NewHandler(services)
 
 	router := handler.InitRouter()

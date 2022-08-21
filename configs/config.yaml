@@ -4,3 +4,6 @@ db:
   username: "postgres"
   db_name: "postgres"
   ssl_mode: "disable"
+
+cache:
+  ttl: 10s
