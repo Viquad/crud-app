@@ -6,20 +6,29 @@ OPTIONS=sslmode=disable
 
 POSTGRES_URI=postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(HOST):$(PORT)/$(POSTGRES_DB)?$(OPTIONS)
 
-run:
-	docker compose up
+# docker commands
+run: up
 
-stop:
-	docker compose down
-	
-clean: stop
+stop: down
+
+up:
+	docker compose up --force-recreate --build
+
+down:
+	docker compose down --rmi local
+
+clean:
 	docker image rm crud-app_backend
 
-docker: wait-postgres migrate
-	./main
+# migrate commands
+migrate-create:
+	docker compose --profile migrate run --rm create-migration $(SEQ)
 
-wait-postgres:
-	./wait-for-postgres.sh db
+migrate-drop:
+	docker compose --profile migrate run --rm migrate-drop
 
-migrate:
-	goose -dir ./schema -table schema_migrations postgres $(POSTGRES_URI) up-to 20220814121331
+migrate-up:
+	docker compose --profile migrate run --rm migration   
+
+swag-init:
+	docker compose --profile swag run --rm swag-init   
