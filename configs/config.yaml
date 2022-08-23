@@ -4,6 +4,9 @@ db:
   username: "postgres"
   db_name: "postgres"
   ssl_mode: "disable"
+  connection:
+    attempts: 10
+    wait: 1s
 
 cache:
   ttl: 10s
