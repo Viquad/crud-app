@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -52,15 +51,12 @@ func (s *UserService) GetTokenByCredentials(ctx context.Context, input domain.Si
 		return "", err
 	}
 
-	// Create a new token object, specifying signing method and the claims
-	// you would like it to contain.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
 		ID:        strconv.FormatInt(user.Id, 10),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(s.tokenTTL)),
 	})
 
-	// Sign and get the complete encoded token as a string using the secret
 	tokenString, err := token.SignedString(s.hmacSecret)
 	if err != nil {
 		return "", err
@@ -81,7 +77,7 @@ func (s *UserService) GetByCredentials(ctx context.Context, input domain.SignInI
 }
 
 func (s *UserService) ParseToken(ctx context.Context, tokenString string) (int64, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -93,17 +89,17 @@ func (s *UserService) ParseToken(ctx context.Context, tokenString string) (int64
 	}
 
 	if !token.Valid {
-		return 0, errors.New("invalid token")
+		return 0, domain.ErrInvalidToken
 	}
 
-	claims, ok := token.Claims.(jwt.RegisteredClaims)
+	claims, ok := token.Claims.(*jwt.RegisteredClaims)
 	if !ok {
-		return 0, errors.New("invalid claims")
+		return 0, domain.ErrInvalidClaims
 	}
 
 	id, err := strconv.ParseInt(claims.ID, 10, 64)
 	if err != nil {
-		return 0, errors.New("invalid id")
+		return 0, domain.ErrInvalidId
 	}
 
 	return id, nil

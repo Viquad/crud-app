@@ -1,11 +1,13 @@
 package rest
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/Viquad/crud-app/internal/domain"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -29,16 +31,17 @@ func (h *Handler) Logger(c *gin.Context) {
 func (h *Handler) authMiddleware(c *gin.Context) {
 	token, err := getTokenFromRequest(c)
 	if err != nil {
-		newErrorResponse(c, http.StatusUnauthorized, "authMiddleware", "get token error", err.Error())
+		newErrorResponse(c, http.StatusUnauthorized, "authMiddleware", "get token error", err)
 		return
 	}
 
 	userId, err := h.services.GetUserService().ParseToken(c.Request.Context(), token)
 	if err != nil {
-		newErrorResponse(c, http.StatusUnauthorized, "authMiddleware", "service error", err.Error())
+		newErrorResponse(c, http.StatusUnauthorized, "authMiddleware", "service error", err)
 	}
 
-	c.Set("user_id", userId)
+	ctx := context.WithValue(c.Request.Context(), domain.UserIdKey, userId)
+	c.Request = c.Request.WithContext(ctx)
 
 	c.Next()
 }

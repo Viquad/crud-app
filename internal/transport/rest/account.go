@@ -25,28 +25,26 @@ func (h *Handler) initAccount(router *gin.RouterGroup) {
 }
 
 // CreateAccount godoc
-// @Summary     Create new account
-// @Description Create new account
+// @Summary     Create new account for user
+// @Description Create new account for user
+// @Security    ApiKeyAuth
 // @Tags        account
 // @Accept      json
 // @Produce     json
-// @Param       input body     domain.Account true "account info"
-// @Success     200   {object} domain.Account
-// @Failure     400   {object} rest.errorResponse
-// @Failure     500   {object} rest.errorResponse
-// @Router      /account [put]
+// @Param       input       body     domain.AccountCreateInput true "account info"
+// @Success     200         {object} domain.Account
+// @Failure     400,401,500 {object} rest.errorResponse
 // @Router      /account [post]
 func (h *Handler) CreateAccount(c *gin.Context) {
-	account := new(domain.Account)
-
-	if err := c.ShouldBindJSON(account); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "CreateAccount()", "binding error", err.Error())
+	var input domain.AccountCreateInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "CreateAccount()", "binding error", err)
 		return
 	}
 
-	account, err := h.services.GetAccountService().Create(c.Request.Context(), *account)
+	account, err := h.services.GetAccountService().Create(c.Request.Context(), input)
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, "CreateAccount()", "service error", err.Error())
+		newErrorResponse(c, http.StatusInternalServerError, "CreateAccount()", "service error", err)
 		return
 	}
 
@@ -55,19 +53,19 @@ func (h *Handler) CreateAccount(c *gin.Context) {
 
 // GetAccountById godoc
 // @Summary     Get account
-// @Description Get account by id
+// @Description Get user's account by id
+// @Security    ApiKeyAuth
 // @Tags        account
 // @Accept      json
 // @Produce     json
-// @Param       id      path     string true "account id"
-// @Success     200     {object} domain.Account
-// @Failure     400,404 {object} rest.errorResponse
-// @Failure     500     {object} rest.errorResponse
+// @Param       id              path     string true "account id"
+// @Success     200             {object} domain.Account
+// @Failure     400,401,404,500 {object} rest.errorResponse
 // @Router      /account/{id} [get]
 func (h *Handler) GetAccountById(c *gin.Context) {
 	id, err := parseId(c)
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "GetAccountById()", "parsing id error", err.Error())
+		newErrorResponse(c, http.StatusBadRequest, "GetAccountById()", "parsing id error", err)
 		return
 	}
 
@@ -76,9 +74,9 @@ func (h *Handler) GetAccountById(c *gin.Context) {
 		context, problem := "GetAccountById()", "service error"
 		switch {
 		case errors.Is(err, domain.ErrNotExist):
-			newErrorResponse(c, http.StatusNotFound, context, problem, err.Error())
+			newErrorResponse(c, http.StatusNotFound, context, problem, err)
 		default:
-			newErrorResponse(c, http.StatusInternalServerError, context, problem, err.Error())
+			newErrorResponse(c, http.StatusInternalServerError, context, problem, err)
 		}
 		return
 	}
@@ -88,17 +86,18 @@ func (h *Handler) GetAccountById(c *gin.Context) {
 
 // GetAccounts godoc
 // @Summary     Get accounts
-// @Description Get all accounts list
+// @Description Get all user's accounts list
+// @Security    ApiKeyAuth
 // @Tags        account
 // @Accept      json
 // @Produce     json
-// @Success     200 {object} []domain.Account
-// @Failure     500 {object} rest.errorResponse
+// @Success     200     {object} []domain.Account
+// @Failure     401,500 {object} rest.errorResponse
 // @Router      /account [get]
 func (h *Handler) GetAccounts(c *gin.Context) {
 	accounts, err := h.services.GetAccountService().List(c.Request.Context())
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, "GetAccounts()", "service error", err.Error())
+		newErrorResponse(c, http.StatusInternalServerError, "GetAccounts()", "service error", err)
 		return
 	}
 
@@ -107,27 +106,26 @@ func (h *Handler) GetAccounts(c *gin.Context) {
 
 // UpdateAccount godoc
 // @Summary     Update account
-// @Description Update account info by id
+// @Description Update user's account info by id
+// @Security    ApiKeyAuth
 // @Tags        account
 // @Accept      json
 // @Produce     json
-// @Param       id    path     string                    true "account id"
-// @Param       input body     domain.AccountUpdateInput true "account update info"
-// @Success     200   {object} domain.Account
-// @Failure     400   {object} rest.errorResponse
-// @Failure     500   {object} rest.errorResponse
-// @Router      /account/{id} [put]
+// @Param       id          path     string                    true "account id"
+// @Param       input       body     domain.AccountUpdateInput true "account update info"
+// @Success     200         {object} domain.Account
+// @Failure     400,401,500 {object} rest.errorResponse
 // @Router      /account/{id} [post]
 func (h *Handler) UpdateAccount(c *gin.Context) {
 	id, err := parseId(c)
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "UpdateAccount()", "parsing id error", err.Error())
+		newErrorResponse(c, http.StatusBadRequest, "UpdateAccount()", "parsing id error", err)
 		return
 	}
 
 	var input domain.AccountUpdateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "UpdateAccount()", "binding error", err.Error())
+		newErrorResponse(c, http.StatusBadRequest, "UpdateAccount()", "binding error", err)
 		return
 	}
 
@@ -135,9 +133,9 @@ func (h *Handler) UpdateAccount(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrUpdateFailed):
-			newErrorResponse(c, http.StatusBadRequest, "UpdateAccount()", "service error", err.Error())
+			newErrorResponse(c, http.StatusBadRequest, "UpdateAccount()", "service error", err)
 		default:
-			newErrorResponse(c, http.StatusInternalServerError, "UpdateAccount()", "service error", err.Error())
+			newErrorResponse(c, http.StatusInternalServerError, "UpdateAccount()", "service error", err)
 		}
 		return
 	}
@@ -147,28 +145,28 @@ func (h *Handler) UpdateAccount(c *gin.Context) {
 
 // DeleteAccount godoc
 // @Summary     Delete account
-// @Description Delete account by id
+// @Description Delete user's account by id
+// @Security    ApiKeyAuth
 // @Tags        account
 // @Accept      json
 // @Produce     json
-// @Param       id      path     string true "account id"
-// @Success     200     {object} rest.statusResponse
-// @Failure     400,404 {object} rest.errorResponse
-// @Failure     500     {object} rest.errorResponse
+// @Param       id              path     string true "account id"
+// @Success     200             {object} rest.statusResponse
+// @Failure     400,401,404,500 {object} rest.errorResponse
 // @Router      /account/{id} [delete]
 func (h *Handler) DeleteAccount(c *gin.Context) {
 	id, err := parseId(c)
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "DeleteAccount()", "parsing id error", err.Error())
+		newErrorResponse(c, http.StatusBadRequest, "DeleteAccount()", "parsing id error", err)
 		return
 	}
 
 	if err := h.services.GetAccountService().DeleteById(c.Request.Context(), id); err != nil {
 		switch {
 		case errors.Is(err, domain.ErrDeleteFailed):
-			newErrorResponse(c, http.StatusNotFound, "DeleteAccount()", "service error", err.Error())
+			newErrorResponse(c, http.StatusNotFound, "DeleteAccount()", "service error", err)
 		default:
-			newErrorResponse(c, http.StatusInternalServerError, "DeleteAccount()", "service error", err.Error())
+			newErrorResponse(c, http.StatusInternalServerError, "DeleteAccount()", "service error", err)
 		}
 		return
 	}

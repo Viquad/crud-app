@@ -5,18 +5,22 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type authResponse struct {
+	Token string `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjEzMzY0NTUsImlhdCI6MTY2MTMzNTU1NSwianRpIjoiMyJ9.5LfGkxciCiJgEFV8yjX9Pvelt6sZtvUefgIiHIUiiak"`
+}
+
 type errorResponse struct {
-	Message string `json:"error"`
+	Error error `json:"error"`
 }
 
 type statusResponse struct {
-	Status string `json:"status"`
+	Status string `json:"status" example:"ok"`
 }
 
-func newErrorResponse(c *gin.Context, statusCode int, context, problem, message string) {
+func newErrorResponse(c *gin.Context, statusCode int, context, problem string, err error) {
 	logrus.WithFields(logrus.Fields{
 		"context": context,
 		"problem": problem,
-	}).Error(message)
-	c.AbortWithStatusJSON(statusCode, errorResponse{message})
+	}).Error(err)
+	c.AbortWithStatusJSON(statusCode, errorResponse{err})
 }

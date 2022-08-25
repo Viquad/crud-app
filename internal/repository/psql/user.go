@@ -19,8 +19,14 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 }
 
 func (r *UserRepository) Create(ctx context.Context, input domain.SignUpInput) error {
-	query := "INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4)"
-	_, err := r.db.ExecContext(ctx, query, input.FirstName, input.LastName, input.Email, input.Password)
+	query := "SELECT email FROM users WHERE email=$1"
+	err := r.db.QueryRowContext(ctx, query, input.Email).Scan()
+	if !errors.Is(err, sql.ErrNoRows) {
+		return domain.ErrUserAlreadyExists
+	}
+
+	query = "INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4)"
+	_, err = r.db.ExecContext(ctx, query, input.FirstName, input.LastName, input.Email, input.Password)
 
 	return err
 }

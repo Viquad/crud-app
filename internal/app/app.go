@@ -25,6 +25,11 @@ import (
 // @host     localhost:8080
 // @BasePath /
 
+// @securityDefinitions.apikey ApiKeyAuth
+// @name                       Authorization
+// @in                         header
+// @description                Example: Bearer token
+
 func init() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logrus.SetOutput(os.Stdout)
