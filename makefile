@@ -28,7 +28,7 @@ migrate-drop:
 	docker compose --profile migrate run --rm migrate-drop
 
 migrate-up:
-	docker compose --profile migrate run --rm migration   
+	docker compose --profile migrate run --rm migrate
 
 swag-init:
 	docker compose --profile swag run --rm swag-init   
