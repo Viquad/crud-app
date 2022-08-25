@@ -13,6 +13,9 @@ type Config struct {
 	Cache struct {
 		TTL time.Duration `mapstructure:"ttl"`
 	} `mapstructure:"cache"`
+	Auth struct {
+		TokenTTL time.Duration `mapstructure:"token_ttl"`
+	} `mapstructure:"auth"`
 }
 
 func New(path, name string) (*Config, error) {

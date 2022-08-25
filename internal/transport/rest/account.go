@@ -12,6 +12,8 @@ import (
 func (h *Handler) initAccount(router *gin.RouterGroup) {
 	account := router.Group("/account")
 	{
+		account.Use(h.authMiddleware)
+
 		account.POST("/", h.CreateAccount)
 		account.PUT("/", h.CreateAccount)
 		account.GET("/", h.GetAccounts)

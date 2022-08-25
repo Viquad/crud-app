@@ -12,6 +12,7 @@ import (
 	"github.com/Viquad/crud-app/internal/transport/rest"
 	"github.com/Viquad/crud-app/pkg/config"
 	"github.com/Viquad/crud-app/pkg/database"
+	"github.com/Viquad/crud-app/pkg/hash"
 	cache "github.com/Viquad/simple-cache"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -59,9 +60,10 @@ func Run() {
 
 	defer db.Close()
 
+	hasher := hash.NewSHA1Hasher("TODO:MoveItToConfig")
 	cache := cache.NewMemoryCache()
 	repo := psql.NewRepositories(db)
-	services := service.NewServices(repo, cache, cfg.Cache.TTL)
+	services := service.NewServices(repo, cache, cfg.Cache.TTL, hasher, []byte("TODO:MoveItToConfig"), cfg.Auth.TokenTTL)
 	handler := rest.NewHandler(services)
 
 	router := handler.InitRouter()
@@ -80,6 +82,8 @@ func Run() {
 		<-gCtx.Done()
 		return httpServer.Shutdown(context.Background())
 	})
+
+	logrus.Info("Server started")
 
 	if err := g.Wait(); err != nil {
 		logrus.WithFields(logrus.Fields{

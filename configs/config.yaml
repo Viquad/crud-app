@@ -10,3 +10,6 @@ db:
 
 cache:
   ttl: 10s
+
+auth:
+  token_ttl: 15m
