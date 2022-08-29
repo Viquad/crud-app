@@ -10,6 +10,7 @@ import (
 type Repositories interface {
 	GetAccountRepository() domain.AccountRepository
 	GetUserRepository() domain.UserRepository
+	GetTokenRepository() domain.TokenRepository
 }
 
 type PasswordHasher interface {
@@ -29,9 +30,9 @@ func (ss *Services) GetUserService() domain.UserService {
 	return ss.userService
 }
 
-func NewServices(repo Repositories, cache cache.Cache, cachettl time.Duration, hasher PasswordHasher, secret []byte, tokenttl time.Duration) *Services {
+func NewServices(repo Repositories, cache cache.Cache, hasher PasswordHasher, secret []byte, cachettl, accessttl, refreshttl time.Duration) *Services {
 	return &Services{
-		accountService: NewAccountService(repo.GetAccountRepository(), cache, cachettl),
-		userService:    NewUserService(repo.GetUserRepository(), hasher, secret, tokenttl),
+		accountService: NewAccountService(repo, cache, cachettl),
+		userService:    NewUserService(repo, hasher, secret, accessttl, refreshttl),
 	}
 }

@@ -32,8 +32,9 @@ type SignInInput struct {
 
 type UserService interface {
 	Create(ctx context.Context, input SignUpInput) error
-	GetTokenByCredentials(ctx context.Context, input SignInInput) (string, error)
+	GetTokenByCredentials(ctx context.Context, input SignInInput) (string, string, error)
 	ParseToken(ctx context.Context, token string) (int64, error)
+	RefreshTokens(ctx context.Context, token string) (string, string, error)
 }
 
 type UserRepository interface {

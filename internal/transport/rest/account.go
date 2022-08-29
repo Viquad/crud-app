@@ -89,7 +89,6 @@ func (h *Handler) GetAccountById(c *gin.Context) {
 // @Description Get all user's accounts list
 // @Security    ApiKeyAuth
 // @Tags        account
-// @Accept      json
 // @Produce     json
 // @Success     200     {object} []domain.Account
 // @Failure     401,500 {object} rest.errorResponse

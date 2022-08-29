@@ -19,9 +19,9 @@ type AccountService struct {
 	ttl   time.Duration
 }
 
-func NewAccountService(repo domain.AccountRepository, cache cache.Cache, ttl time.Duration) *AccountService {
+func NewAccountService(repo Repositories, cache cache.Cache, ttl time.Duration) *AccountService {
 	return &AccountService{
-		repo:  repo,
+		repo:  repo.GetAccountRepository(),
 		cache: cache,
 		ttl:   ttl,
 	}

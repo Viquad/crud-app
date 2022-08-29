@@ -14,7 +14,8 @@ type Config struct {
 		TTL time.Duration `mapstructure:"ttl"`
 	} `mapstructure:"cache"`
 	Auth struct {
-		TokenTTL time.Duration `mapstructure:"token_ttl"`
+		AccessTokenTTL  time.Duration `mapstructure:"access_ttl"`
+		RefreshTokenTTL time.Duration `mapstructure:"refresh_ttl"`
 	} `mapstructure:"auth"`
 }
 

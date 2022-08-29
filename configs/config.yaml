@@ -12,4 +12,5 @@ cache:
   ttl: 10s
 
 auth:
-  token_ttl: 15m
+  access_ttl: 15m
+  refresh_ttl: 60m

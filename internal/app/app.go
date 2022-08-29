@@ -68,7 +68,7 @@ func Run() {
 	hasher := hash.NewSHA1Hasher("TODO:MoveItToConfig")
 	cache := cache.NewMemoryCache()
 	repo := psql.NewRepositories(db)
-	services := service.NewServices(repo, cache, cfg.Cache.TTL, hasher, []byte("TODO:MoveItToConfig"), cfg.Auth.TokenTTL)
+	services := service.NewServices(repo, cache, hasher, []byte("TODO:MoveItToConfig"), cfg.Cache.TTL, cfg.Auth.AccessTokenTTL, cfg.Auth.RefreshTokenTTL)
 	handler := rest.NewHandler(services)
 
 	router := handler.InitRouter()
