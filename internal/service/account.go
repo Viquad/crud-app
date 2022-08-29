@@ -48,15 +48,16 @@ func (s *AccountService) GetById(ctx context.Context, id int64) (account *domain
 		return nil, domain.ErrInvalidId
 	}
 
+	var cached bool
 	i, err := s.cache.Get(cacheKey(userId, id))
 	if err == nil {
 		logrus.WithFields(logrus.Fields{
 			"context": "AccountService.GetById()",
 		}).Debug("Get account from cache")
-		account, ok = i.(*domain.Account)
+		account, cached = i.(*domain.Account)
 	}
 
-	if !ok {
+	if !cached {
 		logrus.WithFields(logrus.Fields{
 			"context": "AccountService.GetById()",
 		}).Debug("Get account from repo")
@@ -76,15 +77,16 @@ func (s *AccountService) List(ctx context.Context) (accounts []domain.Account, e
 		return nil, domain.ErrInvalidId
 	}
 
+	var cached bool
 	i, err := s.cache.Get(cacheKey(userId, listId))
 	if err == nil {
 		logrus.WithFields(logrus.Fields{
 			"context": "AccountService.List()",
 		}).Debug("Get accounts from cache")
-		accounts, ok = i.([]domain.Account)
+		accounts, cached = i.([]domain.Account)
 	}
 
-	if !ok {
+	if !cached {
 		logrus.WithFields(logrus.Fields{
 			"context": "AccountService.List()",
 		}).Debug("Get accounts from repo")
