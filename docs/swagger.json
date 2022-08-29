@@ -1,9 +1,10 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "API Server for CRUD application",
+        "description": "Example: Bearer token",
         "title": "CRUD app API",
         "contact": {},
+        "license": {},
         "version": "1.0"
     },
     "host": "localhost:8080",
@@ -11,10 +12,12 @@
     "paths": {
         "/account": {
             "get": {
-                "description": "Get all accounts list",
-                "consumes": [
-                    "application/json"
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
                 ],
+                "description": "Get all user's accounts list",
                 "produces": [
                     "application/json"
                 ],
@@ -40,52 +43,13 @@
                     }
                 }
             },
-            "put": {
-                "description": "Create new account",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "account"
-                ],
-                "summary": "Create new account",
-                "parameters": [
-                    {
-                        "description": "account info",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/domain.Account"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/domain.Account"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/rest.errorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.errorResponse"
-                        }
-                    }
-                }
-            },
             "post": {
-                "description": "Create new account",
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create new account for user",
                 "consumes": [
                     "application/json"
                 ],
@@ -95,7 +59,7 @@
                 "tags": [
                     "account"
                 ],
-                "summary": "Create new account",
+                "summary": "Create new account for user",
                 "parameters": [
                     {
                         "description": "account info",
@@ -103,7 +67,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/domain.Account"
+                            "$ref": "#/definitions/domain.AccountCreateInput"
                         }
                     }
                 ],
@@ -112,12 +76,6 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/domain.Account"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/rest.errorResponse"
                         }
                     },
                     "500": {
@@ -131,7 +89,12 @@
         },
         "/account/{id}": {
             "get": {
-                "description": "Get account by id",
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get user's account by id",
                 "consumes": [
                     "application/json"
                 ],
@@ -158,69 +121,6 @@
                             "$ref": "#/definitions/domain.Account"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/rest.errorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/rest.errorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.errorResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update account info by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "account"
-                ],
-                "summary": "Update account",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "account id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "account update info",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/domain.AccountUpdateInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/domain.Account"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/rest.errorResponse"
-                        }
-                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -230,7 +130,12 @@
                 }
             },
             "post": {
-                "description": "Update account info by id",
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update user's account info by id",
                 "consumes": [
                     "application/json"
                 ],
@@ -264,12 +169,6 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/domain.Account"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/rest.errorResponse"
                         }
                     },
                     "500": {
@@ -281,7 +180,12 @@
                 }
             },
             "delete": {
-                "description": "Delete account by id",
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete user's account by id",
                 "consumes": [
                     "application/json"
                 ],
@@ -305,19 +209,113 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.Account"
+                            "$ref": "#/definitions/rest.statusResponse"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/rest.errorResponse"
                         }
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "get": {
+                "description": "Refresh tokens",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Refresh tokens",
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/rest.authResponse"
+                        }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/rest.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/sign-in": {
+            "post": {
+                "description": "SignIn",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "SignIn",
+                "parameters": [
+                    {
+                        "description": "user credentials to Sign-In",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.SignInInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/rest.authResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/sign-up": {
+            "post": {
+                "description": "SingUp",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "SingUp",
+                "parameters": [
+                    {
+                        "description": "user credentials to Sign-Up",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.SignUpInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/rest.statusResponse"
                         }
                     },
                     "500": {
@@ -333,30 +331,43 @@
     "definitions": {
         "domain.Account": {
             "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "UAH"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "lastUpdate": {
+                    "type": "string",
+                    "example": "2022-08-25T14:58:16.413065Z"
+                },
+                "user_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "domain.AccountCreateInput": {
+            "type": "object",
             "required": [
                 "balance",
-                "currency",
-                "firstName",
-                "lastName"
+                "currency"
             ],
             "properties": {
                 "balance": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 200
                 },
                 "currency": {
-                    "type": "string"
-                },
-                "firstName": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "lastName": {
-                    "type": "string"
-                },
-                "lastUpdate": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "UAH"
                 }
             }
         },
@@ -364,16 +375,61 @@
             "type": "object",
             "properties": {
                 "balance": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1000
+                }
+            }
+        },
+        "domain.SignInInput": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "ofilatov@gmail.com"
                 },
-                "currency": {
-                    "type": "string"
+                "password": {
+                    "type": "string",
+                    "example": "TheBestGuy99"
+                }
+            }
+        },
+        "domain.SignUpInput": {
+            "type": "object",
+            "required": [
+                "email",
+                "firstName",
+                "lastName",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "ofilatov@gmail.com"
                 },
                 "firstName": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Oleksii"
                 },
                 "lastName": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Filatov"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "TheBestGuy99"
+                }
+            }
+        },
+        "rest.authResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjEzMzY0NTUsImlhdCI6MTY2MTMzNTU1NSwianRpIjoiMyJ9.5LfGkxciCiJgEFV8yjX9Pvelt6sZtvUefgIiHIUiiak"
                 }
             }
         },
@@ -381,9 +437,25 @@
             "type": "object",
             "properties": {
                 "error": {
-                    "type": "string"
+                    "type": "error"
                 }
             }
+        },
+        "rest.statusResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "example": "ok"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }
