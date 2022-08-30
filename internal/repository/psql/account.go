@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/Viquad/crud-app/internal/domain"
 )
@@ -15,35 +14,47 @@ type AccountRepository struct {
 	db *sql.DB
 }
 
-func NewAccount(db *sql.DB) *AccountRepository {
+func NewAccountRepository(db *sql.DB) *AccountRepository {
 	return &AccountRepository{
 		db: db,
 	}
 }
 
-func (b *AccountRepository) Create(ctx context.Context, account domain.Account) (*domain.Account, error) {
-	var id int64
-	var update time.Time
-	query := "INSERT INTO accounts (first_name, last_name, balance, currency) VALUES ($1, $2, $3, $4) RETURNING id, last_update"
-	err := b.db.QueryRowContext(ctx, query, account.FirstName, account.LastName, account.Balance, account.Currency).
-		Scan(&id, &update)
+func (b *AccountRepository) Create(ctx context.Context, inp domain.AccountCreateInput) (*domain.Account, error) {
+	userId, ok := ctx.Value(domain.UserIdKey).(int64)
+	if !ok {
+		return nil, domain.ErrInvalidId
+	}
+
+	account := domain.Account{
+		UserId:   userId,
+		Balance:  inp.Balance,
+		Currency: inp.Currency,
+	}
+
+	query := "INSERT INTO accounts (user_id, balance, currency) VALUES ($1, $2, $3) RETURNING id, last_update"
+	err := b.db.QueryRowContext(ctx, query, userId, inp.Balance, inp.Currency).
+		Scan(&account.Id, &account.LastUpdate)
 
 	if err != nil {
 		return nil, err
 	}
-
-	account.Id = id
-	account.LastUpdate = update
 
 	return &account, err
 }
 
 func (b *AccountRepository) GetById(ctx context.Context, id int64) (*domain.Account, error) {
 	var account domain.Account
-	query := "SELECT id, first_name, last_name, balance, currency, last_update FROM accounts WHERE id = $1"
-	row := b.db.QueryRowContext(ctx, query, id)
 
-	if err := row.Scan(&account.Id, &account.FirstName, &account.LastName, &account.Balance, &account.Currency, &account.LastUpdate); err != nil {
+	userId, ok := ctx.Value(domain.UserIdKey).(int64)
+	if !ok {
+		return nil, domain.ErrInvalidId
+	}
+
+	query := "SELECT id, user_id, balance, currency, last_update FROM accounts WHERE id = $1 AND user_id = $2"
+	row := b.db.QueryRowContext(ctx, query, id, userId)
+
+	if err := row.Scan(&account.Id, &account.UserId, &account.Balance, &account.Currency, &account.LastUpdate); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrNotExist
 		}
@@ -53,10 +64,16 @@ func (b *AccountRepository) GetById(ctx context.Context, id int64) (*domain.Acco
 	return &account, nil
 }
 
-func (b *AccountRepository) All(ctx context.Context) ([]domain.Account, error) {
+func (b *AccountRepository) List(ctx context.Context) ([]domain.Account, error) {
 	var accounts []domain.Account
-	query := "SELECT id, first_name, last_name, balance, currency, last_update FROM accounts"
-	rows, err := b.db.QueryContext(ctx, query)
+
+	userId, ok := ctx.Value(domain.UserIdKey).(int64)
+	if !ok {
+		return nil, domain.ErrInvalidId
+	}
+
+	query := "SELECT id, user_id, balance, currency, last_update FROM accounts WHERE user_id = $1"
+	rows, err := b.db.QueryContext(ctx, query, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +81,7 @@ func (b *AccountRepository) All(ctx context.Context) ([]domain.Account, error) {
 
 	for rows.Next() {
 		var account domain.Account
-		if err := rows.Scan(&account.Id, &account.FirstName, &account.LastName, &account.Balance, &account.Currency, &account.LastUpdate); err != nil {
+		if err := rows.Scan(&account.Id, &account.UserId, &account.Balance, &account.Currency, &account.LastUpdate); err != nil {
 			return nil, err
 		}
 
@@ -74,47 +91,50 @@ func (b *AccountRepository) All(ctx context.Context) ([]domain.Account, error) {
 	return accounts, nil
 }
 
-func (b *AccountRepository) Update(ctx context.Context, id int64, inp domain.AccountUpdateInput) (*domain.Account, error) {
-	setValues := make([]string, 0)
-	args := make([]interface{}, 0)
-	argIndex := 1
-	account := new(domain.Account)
+func (b *AccountRepository) UpdateById(ctx context.Context, id int64, inp domain.AccountUpdateInput) (*domain.Account, error) {
+	var (
+		account   domain.Account
+		setValues []string
+		args      []interface{}
+		argIndex  = 1
+		addArg    = func(i interface{}, arg string) {
+			setValues = append(setValues, fmt.Sprintf("%s=$%d", arg, argIndex))
+			args = append(args, i)
+			argIndex++
+		}
+	)
 
-	addArg := func(i interface{}, arg string) {
-		setValues = append(setValues, fmt.Sprintf("%s=$%d", arg, argIndex))
-		args = append(args, i)
-		argIndex++
+	userId, ok := ctx.Value(domain.UserIdKey).(int64)
+	if !ok {
+		return nil, domain.ErrInvalidId
 	}
 
-	if inp.FirstName != nil {
-		addArg(*inp.FirstName, "first_name")
-	}
-	if inp.LastName != nil {
-		addArg(*inp.LastName, "last_name")
-	}
 	if inp.Balance != nil {
 		addArg(*inp.Balance, "balance")
-	}
-	if inp.Currency != nil {
-		addArg(*inp.Currency, "currency")
 	}
 	addArg("now()", "last_update")
 
 	setQuery := strings.Join(setValues, ", ")
-	query := fmt.Sprintf("UPDATE accounts SET %s WHERE id=$%d RETURNING id, first_name, last_name, balance, currency, last_update", setQuery, argIndex)
-	args = append(args, id)
+	query := fmt.Sprintf("UPDATE accounts SET %s WHERE id=$%d AND user_id=$%d RETURNING id, user_id, balance, currency, last_update", setQuery, argIndex, argIndex+1)
+	argIndex++
+	args = append(args, id, userId)
 
 	row := b.db.QueryRowContext(ctx, query, args...)
-	err := row.Scan(&account.Id, &account.FirstName, &account.LastName, &account.Balance, &account.Currency, &account.LastUpdate)
+	err := row.Scan(&account.Id, &account.UserId, &account.Balance, &account.Currency, &account.LastUpdate)
 	if err != nil {
 		return nil, domain.ErrUpdateFailed
 	}
 
-	return account, nil
+	return &account, nil
 }
 
-func (b *AccountRepository) Delete(ctx context.Context, id int64) error {
-	res, err := b.db.ExecContext(ctx, "DELETE FROM accounts WHERE id=$1", id)
+func (b *AccountRepository) DeleteById(ctx context.Context, id int64) error {
+	userId, ok := ctx.Value(domain.UserIdKey).(int64)
+	if !ok {
+		return domain.ErrInvalidId
+	}
+
+	res, err := b.db.ExecContext(ctx, "DELETE FROM accounts WHERE id=$1 AND user_id=$2", id, userId)
 	if err != nil {
 		return err
 	}

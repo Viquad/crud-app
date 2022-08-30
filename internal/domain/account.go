@@ -6,33 +6,34 @@ import (
 )
 
 type Account struct {
-	Id         int64     `json:"id"`
-	FirstName  string    `json:"firstName"`
-	LastName   string    `json:"lastName"`
-	Balance    int64     `json:"balance"`
-	Currency   string    `json:"currency"`
-	LastUpdate time.Time `json:"lastUpdate"`
+	Id         int64     `form:"id" json:"id" example:"1"`
+	UserId     int64     `form:"id" json:"user_id" example:"1"`
+	Balance    int64     `form:"balance" json:"balance" example:"1000"`
+	Currency   string    `form:"currency" json:"currency" example:"UAH"`
+	LastUpdate time.Time `form:"lastUpdate" json:"lastUpdate" example:"2022-08-25T14:58:16.413065Z"`
+}
+
+type AccountCreateInput struct {
+	Balance  int64  `form:"balance" json:"balance" binding:"required" example:"200"`
+	Currency string `form:"currency" json:"currency" binding:"required" example:"UAH"`
 }
 
 type AccountUpdateInput struct {
-	FirstName *string `json:"firstName"`
-	LastName  *string `json:"lastName"`
-	Balance   *int64  `json:"balance"`
-	Currency  *string `json:"currency"`
+	Balance *int64 `form:"balance" json:"balance" example:"1000"`
 }
 
 type AccountService interface {
-	Create(ctx context.Context, account Account) (*Account, error)
-	All(ctx context.Context) ([]Account, error)
+	Create(ctx context.Context, inp AccountCreateInput) (*Account, error)
+	List(ctx context.Context) ([]Account, error)
 	GetById(ctx context.Context, id int64) (*Account, error)
-	Update(ctx context.Context, id int64, inp AccountUpdateInput) (*Account, error)
-	Delete(ctx context.Context, id int64) error
+	UpdateById(ctx context.Context, id int64, inp AccountUpdateInput) (*Account, error)
+	DeleteById(ctx context.Context, id int64) error
 }
 
 type AccountRepository interface {
-	Create(ctx context.Context, account Account) (*Account, error)
-	All(ctx context.Context) ([]Account, error)
+	Create(ctx context.Context, inp AccountCreateInput) (*Account, error)
+	List(ctx context.Context) ([]Account, error)
 	GetById(ctx context.Context, id int64) (*Account, error)
-	Update(ctx context.Context, id int64, inp AccountUpdateInput) (*Account, error)
-	Delete(ctx context.Context, id int64) error
+	UpdateById(ctx context.Context, id int64, inp AccountUpdateInput) (*Account, error)
+	DeleteById(ctx context.Context, id int64) error
 }
