@@ -8,21 +8,26 @@ import (
 	"time"
 
 	"github.com/Viquad/crud-app/internal/domain"
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/gorilla/sessions"
 )
+
+const auth_session = "auth_session"
 
 type UserService struct {
 	repo struct {
 		user  domain.UserRepository
 		token domain.TokenRepository
 	}
+	sessionsStore   sessions.Store
 	hasher          PasswordHasher
 	hmacSecret      []byte
 	accessTokenTTL  time.Duration
 	refreshTokenTTL time.Duration
 }
 
-func NewUserService(repos Repositories, hasher PasswordHasher, secret []byte, accessttl, refreshttl time.Duration) *UserService {
+func NewUserService(repos Repositories, store sessions.Store, hasher PasswordHasher, secret []byte, accessttl, refreshttl time.Duration) *UserService {
 	return &UserService{
 		repo: struct {
 			user  domain.UserRepository
@@ -31,6 +36,7 @@ func NewUserService(repos Repositories, hasher PasswordHasher, secret []byte, ac
 			user:  repos.GetUserRepository(),
 			token: repos.GetTokenRepository(),
 		},
+		sessionsStore:   store,
 		hasher:          hasher,
 		hmacSecret:      secret,
 		accessTokenTTL:  accessttl,
@@ -150,6 +156,42 @@ func (s *UserService) generateTokens(ctx context.Context, userId int64) (string,
 	}
 
 	return accessToken, refreshToken, nil
+}
+
+func (s *UserService) InitSession(c *gin.Context, input domain.SignInInput) error {
+	user, err := s.GetByCredentials(c.Request.Context(), input)
+	if err != nil {
+		return err
+	}
+
+	session, err := s.sessionsStore.New(c.Request, auth_session)
+	if err != nil {
+		return err
+	}
+
+	session.Values[string(domain.UserIdKey)] = user.Id
+
+	return session.Save(c.Request, c.Writer)
+}
+
+func (s *UserService) GetSession(c *gin.Context) (int64, error) {
+	session, err := s.sessionsStore.Get(c.Request, auth_session)
+	if err != nil {
+		return 0, err
+	}
+
+	id, ok := session.Values[string(domain.UserIdKey)].(int64)
+	if !ok {
+		return 0, domain.ErrInvalidId
+	}
+
+	return id, nil
+}
+
+func (s *UserService) DropSession(c *gin.Context) error {
+	session, _ := s.sessionsStore.Get(c.Request, auth_session)
+	session.Options.MaxAge = -1
+	return session.Save(c.Request, c.Writer)
 }
 
 func newRefreshToken() (string, error) {

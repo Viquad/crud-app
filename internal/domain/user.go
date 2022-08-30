@@ -3,6 +3,8 @@ package domain
 import (
 	"context"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type keyType string
@@ -35,6 +37,9 @@ type UserService interface {
 	GetTokenByCredentials(ctx context.Context, input SignInInput) (string, string, error)
 	ParseToken(ctx context.Context, token string) (int64, error)
 	RefreshTokens(ctx context.Context, token string) (string, string, error)
+	InitSession(c *gin.Context, input SignInInput) error
+	GetSession(c *gin.Context) (int64, error)
+	DropSession(c *gin.Context) error
 }
 
 type UserRepository interface {

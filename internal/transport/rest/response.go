@@ -10,7 +10,7 @@ type authResponse struct {
 }
 
 type errorResponse struct {
-	Error error `json:"error"`
+	Error string `json:"error"`
 }
 
 type statusResponse struct {
@@ -22,5 +22,5 @@ func newErrorResponse(c *gin.Context, statusCode int, context, problem string, e
 		"context": context,
 		"problem": problem,
 	}).Error(err)
-	c.AbortWithStatusJSON(statusCode, errorResponse{err})
+	c.AbortWithStatusJSON(statusCode, errorResponse{err.Error()})
 }
