@@ -12,11 +12,16 @@ Simple CRUD application for bank's users and their accounts.
 
 Set your `POSTGRESS_PASSWORD` to `.env` - environment file. It will be used for docker `backend` and `postgres` containers. 
 
+Apply migrations to database before run:
+```sh
+    make migrate-up
+```
+
 ## Run
 ```sh
     make run
 ```
-Builds `backend`-container with app. Starts `postgres`-container and `backend`-container. After successful connection `backend`-container to `postgres`-container will applied database migration.
+Builds `backend`-container with app. Starts `postgres`-container and `backend`-container.
 
 ## Stop
 ```sh

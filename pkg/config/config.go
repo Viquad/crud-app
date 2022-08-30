@@ -13,6 +13,10 @@ type Config struct {
 	Cache struct {
 		TTL time.Duration `mapstructure:"ttl"`
 	} `mapstructure:"cache"`
+	Auth struct {
+		AccessTokenTTL  time.Duration `mapstructure:"access_ttl"`
+		RefreshTokenTTL time.Duration `mapstructure:"refresh_ttl"`
+	} `mapstructure:"auth"`
 }
 
 func New(path, name string) (*Config, error) {

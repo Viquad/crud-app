@@ -7,6 +7,7 @@ import (
 
 type Services interface {
 	GetAccountService() domain.AccountService
+	GetUserService() domain.UserService
 }
 
 type Handler struct {
@@ -20,9 +21,10 @@ func NewHandler(s Services) *Handler {
 func (h *Handler) InitRouter() *gin.Engine {
 	router := gin.New()
 
-	router.Use(Logger(), gin.Recovery())
+	router.Use(h.Logger, gin.Recovery())
 
 	h.initSwagger(&router.RouterGroup)
+	h.initAuth(&router.RouterGroup)
 	h.initAccount(&router.RouterGroup)
 
 	return router
