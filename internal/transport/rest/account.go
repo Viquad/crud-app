@@ -31,9 +31,11 @@ func (h *Handler) initAccount(router *gin.RouterGroup) {
 // @Tags        account
 // @Accept      json
 // @Produce     json
-// @Param       input       body     domain.AccountCreateInput true "account info"
-// @Success     200         {object} domain.Account
-// @Failure     400,401,500 {object} rest.errorResponse
+// @Param       input body     domain.AccountCreateInput true "account info"
+// @Success     200   {object} domain.Account
+// @Failure     400   {object} rest.errorResponse
+// @Failure     401   {object} rest.errorResponse
+// @Failure     500   {object} rest.errorResponse
 // @Router      /account [post]
 func (h *Handler) CreateAccount(c *gin.Context) {
 	var input domain.AccountCreateInput
@@ -58,9 +60,12 @@ func (h *Handler) CreateAccount(c *gin.Context) {
 // @Tags        account
 // @Accept      json
 // @Produce     json
-// @Param       id              path     string true "account id"
-// @Success     200             {object} domain.Account
-// @Failure     400,401,404,500 {object} rest.errorResponse
+// @Param       id  path     string true "account id"
+// @Success     200 {object} domain.Account
+// @Failure     400 {object} rest.errorResponse
+// @Failure     401 {object} rest.errorResponse
+// @Failure     404 {object} rest.errorResponse
+// @Failure     500 {object} rest.errorResponse
 // @Router      /account/{id} [get]
 func (h *Handler) GetAccountById(c *gin.Context) {
 	id, err := parseId(c)
@@ -90,8 +95,9 @@ func (h *Handler) GetAccountById(c *gin.Context) {
 // @Security    ApiKeyAuth
 // @Tags        account
 // @Produce     json
-// @Success     200     {object} []domain.Account
-// @Failure     401,500 {object} rest.errorResponse
+// @Success     200 {object} []domain.Account
+// @Failure     401 {object} rest.errorResponse
+// @Failure     500 {object} rest.errorResponse
 // @Router      /account [get]
 func (h *Handler) GetAccounts(c *gin.Context) {
 	accounts, err := h.services.GetAccountService().List(c.Request.Context())
@@ -110,10 +116,12 @@ func (h *Handler) GetAccounts(c *gin.Context) {
 // @Tags        account
 // @Accept      json
 // @Produce     json
-// @Param       id          path     string                    true "account id"
-// @Param       input       body     domain.AccountUpdateInput true "account update info"
-// @Success     200         {object} domain.Account
-// @Failure     400,401,500 {object} rest.errorResponse
+// @Param       id    path     string                    true "account id"
+// @Param       input body     domain.AccountUpdateInput true "account update info"
+// @Success     200   {object} domain.Account
+// @Failure     400   {object} rest.errorResponse
+// @Failure     401   {object} rest.errorResponse
+// @Failure     500   {object} rest.errorResponse
 // @Router      /account/{id} [post]
 func (h *Handler) UpdateAccount(c *gin.Context) {
 	id, err := parseId(c)
@@ -149,9 +157,12 @@ func (h *Handler) UpdateAccount(c *gin.Context) {
 // @Tags        account
 // @Accept      json
 // @Produce     json
-// @Param       id              path     string true "account id"
-// @Success     200             {object} rest.statusResponse
-// @Failure     400,401,404,500 {object} rest.errorResponse
+// @Param       id  path     string true "account id"
+// @Success     200 {object} rest.statusResponse
+// @Failure     400 {object} rest.errorResponse
+// @Failure     401 {object} rest.errorResponse
+// @Failure     404 {object} rest.errorResponse
+// @Failure     500 {object} rest.errorResponse
 // @Router      /account/{id} [delete]
 func (h *Handler) DeleteAccount(c *gin.Context) {
 	id, err := parseId(c)

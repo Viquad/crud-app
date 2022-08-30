@@ -18,7 +18,7 @@ func NewTokenRepository(db *sql.DB) *TokenRepository {
 }
 
 func (r *TokenRepository) Create(ctx context.Context, token domain.RefreshSession) error {
-	_, err := r.db.Exec("INSERT INTO refresh_tokens (user_id, token, expires_at) values ($1, $2, $3)",
+	_, err := r.db.ExecContext(ctx, "INSERT INTO refresh_tokens (user_id, token, expires_at) values ($1, $2, $3)",
 		token.UserID, token.Token, token.ExpiresAt)
 
 	return err
@@ -26,7 +26,7 @@ func (r *TokenRepository) Create(ctx context.Context, token domain.RefreshSessio
 
 func (r *TokenRepository) Get(ctx context.Context, token string) (*domain.RefreshSession, error) {
 	var t domain.RefreshSession
-	err := r.db.QueryRow("SELECT id, user_id, token, expires_at FROM refresh_tokens WHERE token=$1", token).
+	err := r.db.QueryRowContext(ctx, "SELECT id, user_id, token, expires_at FROM refresh_tokens WHERE token=$1", token).
 		Scan(&t.ID, &t.UserID, &t.Token, &t.ExpiresAt)
 	if err != nil {
 		return nil, err
