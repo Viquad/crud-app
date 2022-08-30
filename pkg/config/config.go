@@ -2,13 +2,21 @@ package config
 
 import (
 	"os"
+	"time"
 
 	"github.com/Viquad/crud-app/pkg/database"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	DB database.ConnectionInfo `mapstructure:"db"`
+	DB    database.ConnectionInfo `mapstructure:"db"`
+	Cache struct {
+		TTL time.Duration `mapstructure:"ttl"`
+	} `mapstructure:"cache"`
+	Auth struct {
+		AccessTokenTTL  time.Duration `mapstructure:"access_ttl"`
+		RefreshTokenTTL time.Duration `mapstructure:"refresh_ttl"`
+	} `mapstructure:"auth"`
 }
 
 func New(path, name string) (*Config, error) {

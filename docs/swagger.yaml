@@ -3,51 +3,99 @@ definitions:
   domain.Account:
     properties:
       balance:
+        example: 1000
         type: integer
       currency:
-        type: string
-      firstName:
+        example: UAH
         type: string
       id:
+        example: 1
         type: integer
-      lastName:
-        type: string
       lastUpdate:
+        example: "2022-08-25T14:58:16.413065Z"
+        type: string
+      user_id:
+        example: 1
+        type: integer
+    type: object
+  domain.AccountCreateInput:
+    properties:
+      balance:
+        example: 200
+        type: integer
+      currency:
+        example: UAH
         type: string
     required:
     - balance
     - currency
-    - firstName
-    - lastName
     type: object
   domain.AccountUpdateInput:
     properties:
       balance:
+        example: 1000
         type: integer
-      currency:
+    type: object
+  domain.SignInInput:
+    properties:
+      email:
+        example: ofilatov@gmail.com
+        type: string
+      password:
+        example: TheBestGuy99
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  domain.SignUpInput:
+    properties:
+      email:
+        example: ofilatov@gmail.com
         type: string
       firstName:
+        example: Oleksii
         type: string
       lastName:
+        example: Filatov
+        type: string
+      password:
+        example: TheBestGuy99
+        type: string
+    required:
+    - email
+    - firstName
+    - lastName
+    - password
+    type: object
+  rest.authResponse:
+    properties:
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjEzMzY0NTUsImlhdCI6MTY2MTMzNTU1NSwianRpIjoiMyJ9.5LfGkxciCiJgEFV8yjX9Pvelt6sZtvUefgIiHIUiiak
         type: string
     type: object
   rest.errorResponse:
     properties:
       error:
+        type: error
+    type: object
+  rest.statusResponse:
+    properties:
+      status:
+        example: ok
         type: string
     type: object
 host: localhost:8080
 info:
   contact: {}
-  description: API Server for CRUD application
+  description: 'Example: Bearer token'
+  license: {}
   title: CRUD app API
   version: "1.0"
 paths:
   /account:
     get:
-      consumes:
-      - application/json
-      description: Get all accounts list
+      description: Get all user's accounts list
       produces:
       - application/json
       responses:
@@ -61,20 +109,22 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/rest.errorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: Get accounts
       tags:
       - account
     post:
       consumes:
       - application/json
-      description: Create new account
+      description: Create new account for user
       parameters:
       - description: account info
         in: body
         name: input
         required: true
         schema:
-          $ref: '#/definitions/domain.Account'
+          $ref: '#/definitions/domain.AccountCreateInput'
       produces:
       - application/json
       responses:
@@ -82,51 +132,20 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/domain.Account'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/rest.errorResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/rest.errorResponse'
-      summary: Create new account
-      tags:
-      - account
-    put:
-      consumes:
-      - application/json
-      description: Create new account
-      parameters:
-      - description: account info
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/domain.Account'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/domain.Account'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/rest.errorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/rest.errorResponse'
-      summary: Create new account
+      security:
+      - ApiKeyAuth: []
+      summary: Create new account for user
       tags:
       - account
   /account/{id}:
     delete:
       consumes:
       - application/json
-      description: Delete account by id
+      description: Delete user's account by id
       parameters:
       - description: account id
         in: path
@@ -139,26 +158,20 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.Account'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/rest.errorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/rest.errorResponse'
+            $ref: '#/definitions/rest.statusResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/rest.errorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: Delete account
       tags:
       - account
     get:
       consumes:
       - application/json
-      description: Get account by id
+      description: Get user's account by id
       parameters:
       - description: account id
         in: path
@@ -172,25 +185,19 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/domain.Account'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/rest.errorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/rest.errorResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/rest.errorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: Get account
       tags:
       - account
     post:
       consumes:
       - application/json
-      description: Update account info by id
+      description: Update user's account info by id
       parameters:
       - description: account id
         in: path
@@ -210,49 +217,87 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/domain.Account'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/rest.errorResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/rest.errorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: Update account
       tags:
       - account
-    put:
+  /auth/refresh:
+    get:
+      description: Refresh tokens
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/rest.authResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.errorResponse'
+      summary: Refresh tokens
+      tags:
+      - auth
+  /auth/sign-in:
+    post:
       consumes:
       - application/json
-      description: Update account info by id
+      description: SignIn
       parameters:
-      - description: account id
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: account update info
+      - description: user credentials to Sign-In
         in: body
         name: input
         required: true
         schema:
-          $ref: '#/definitions/domain.AccountUpdateInput'
+          $ref: '#/definitions/domain.SignInInput'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.Account'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/rest.errorResponse'
+            $ref: '#/definitions/rest.authResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/rest.errorResponse'
-      summary: Update account
+      summary: SignIn
       tags:
-      - account
+      - auth
+  /auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: SingUp
+      parameters:
+      - description: user credentials to Sign-Up
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.SignUpInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/rest.statusResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.errorResponse'
+      summary: SingUp
+      tags:
+      - auth
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

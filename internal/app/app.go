@@ -12,6 +12,8 @@ import (
 	"github.com/Viquad/crud-app/internal/transport/rest"
 	"github.com/Viquad/crud-app/pkg/config"
 	"github.com/Viquad/crud-app/pkg/database"
+	"github.com/Viquad/crud-app/pkg/hash"
+	cache "github.com/Viquad/simple-cache"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 )
@@ -23,16 +25,15 @@ import (
 // @host     localhost:8080
 // @BasePath /
 
+// @securityDefinitions.apikey ApiKeyAuth
+// @name                       Authorization
+// @in                         header
+// @description                Example: Bearer token
+
 func init() {
-	// Log as JSON instead of the default ASCII formatter.
 	logrus.SetFormatter(&logrus.JSONFormatter{})
-
-	// Output to stdout instead of the default stderr
-	// Can be any io.Writer, see below for File example
 	logrus.SetOutput(os.Stdout)
-
-	// Only log the warning severity or above.
-	logrus.SetLevel(logrus.InfoLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 }
 
 func Run() {
@@ -64,8 +65,10 @@ func Run() {
 
 	defer db.Close()
 
+	hasher := hash.NewSHA1Hasher("TODO:MoveItToConfig")
+	cache := cache.NewMemoryCache()
 	repo := psql.NewRepositories(db)
-	services := service.NewServices(repo)
+	services := service.NewServices(repo, cache, hasher, []byte("TODO:MoveItToConfig"), cfg.Cache.TTL, cfg.Auth.AccessTokenTTL, cfg.Auth.RefreshTokenTTL)
 	handler := rest.NewHandler(services)
 
 	router := handler.InitRouter()
@@ -84,6 +87,8 @@ func Run() {
 		<-gCtx.Done()
 		return httpServer.Shutdown(context.Background())
 	})
+
+	logrus.Info("Server started")
 
 	if err := g.Wait(); err != nil {
 		logrus.WithFields(logrus.Fields{

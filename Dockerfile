@@ -1,21 +1,24 @@
 FROM golang:1.18-alpine
 
-RUN go version
-ENV GOPATH=/
-
-COPY ./ ./
-
 # install psql and make
 RUN apk update
 RUN apk add postgresql-client make cmake
 
-# make wait-for-postgres.sh executable
-RUN chmod +x wait-for-postgres.sh
+WORKDIR /go/src/github.com/Viquad/crud-app
+COPY cmd cmd
+COPY configs configs
+COPY docs docs
+COPY internal internal
+COPY pkg pkg
+COPY schema schema
+COPY go.mod go.sum ./
 
-# build app 
+# build app
 RUN go mod download
-RUN go build -o ./main ./cmd/main.go
-# install goose
-RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+RUN go build -v -o /main ./cmd/main.go
 
-CMD ["./main"]
+# install migrate
+# RUN go get github.com/golang-migrate/migrate/v4
+# RUN go install github.com/golang-migrate/migrate/v4
+
+CMD ["/main"]
