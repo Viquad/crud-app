@@ -18,21 +18,23 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	}
 }
 
-func (r *UserRepository) Create(ctx context.Context, input domain.SignUpInput) error {
+func (r *UserRepository) Create(ctx context.Context, input domain.SignUpInput) (int64, error) {
+	var id int64
 	query := "SELECT email FROM users WHERE email=$1"
 	err := r.db.QueryRowContext(ctx, query, input.Email).Scan()
 	if err == nil {
-		return domain.ErrUserAlreadyExists
+		return 0, domain.ErrUserAlreadyExists
 	}
 
 	if !errors.Is(err, sql.ErrNoRows) {
-		return err
+		return 0, err
 	}
 
-	query = "INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4)"
-	_, err = r.db.ExecContext(ctx, query, input.FirstName, input.LastName, input.Email, input.Password)
+	query = "INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id"
+	err = r.db.QueryRowContext(ctx, query, input.FirstName, input.LastName, input.Email, input.Password).
+		Scan(&id)
 
-	return err
+	return id, err
 }
 
 func (r *UserRepository) GetByCredentials(ctx context.Context, input domain.SignInInput) (*domain.User, error) {

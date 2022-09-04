@@ -43,6 +43,6 @@ type UserService interface {
 }
 
 type UserRepository interface {
-	Create(ctx context.Context, input SignUpInput) error
+	Create(ctx context.Context, input SignUpInput) (int64, error)
 	GetByCredentials(ctx context.Context, input SignInInput) (*User, error)
 }

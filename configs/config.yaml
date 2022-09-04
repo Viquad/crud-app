@@ -14,3 +14,6 @@ cache:
 auth:
   access_ttl: 15m
   refresh_ttl: 60m
+
+audit:
+  address: "host.docker.internal:9000"

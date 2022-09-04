@@ -22,6 +22,9 @@ type Config struct {
 		AccessTokenTTL  time.Duration `mapstructure:"access_ttl"`
 		RefreshTokenTTL time.Duration `mapstructure:"refresh_ttl"`
 	} `mapstructure:"auth"`
+	Audit struct {
+		Address string `mapstaructure:"address"`
+	} `mapstructure:"audit"`
 }
 
 func New(path, name string) (*Config, error) {
