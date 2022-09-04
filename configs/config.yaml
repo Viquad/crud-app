@@ -1,5 +1,5 @@
 db:
-  host: "db"
+  host: "crud_app_db"
   port: "5432"
   username: "postgres"
   db_name: "postgres"
@@ -14,3 +14,6 @@ cache:
 auth:
   access_ttl: 15m
   refresh_ttl: 60m
+
+audit:
+  address: "host.docker.internal:9000"

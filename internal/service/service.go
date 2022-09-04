@@ -4,7 +4,9 @@ import (
 	"time"
 
 	"github.com/Viquad/crud-app/internal/domain"
+	"github.com/Viquad/crud-audit-service/pkg/domain/audit"
 	cache "github.com/Viquad/simple-cache"
+	"github.com/gorilla/sessions"
 )
 
 type Repositories interface {
@@ -30,9 +32,9 @@ func (ss *Services) GetUserService() domain.UserService {
 	return ss.userService
 }
 
-func NewServices(repo Repositories, cache cache.Cache, hasher PasswordHasher, secret []byte, cachettl, accessttl, refreshttl time.Duration) *Services {
+func NewServices(repo Repositories, cache cache.Cache, store sessions.Store, hasher PasswordHasher, audit audit.AuditServiceClient, secret []byte, cachettl, accessttl, refreshttl time.Duration) *Services {
 	return &Services{
 		accountService: NewAccountService(repo, cache, cachettl),
-		userService:    NewUserService(repo, hasher, secret, accessttl, refreshttl),
+		userService:    NewUserService(repo, store, audit, hasher, secret, accessttl, refreshttl),
 	}
 }

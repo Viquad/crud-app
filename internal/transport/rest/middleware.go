@@ -3,6 +3,7 @@ package rest
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -29,21 +30,47 @@ func (h *Handler) Logger(c *gin.Context) {
 }
 
 func (h *Handler) authMiddleware(c *gin.Context) {
+	err1 := h.authWithToken(c)
+	if err1 == nil {
+		c.Next()
+		return
+	}
+
+	err2 := h.authWithSession(c)
+	if err2 == nil {
+		c.Next()
+		return
+	}
+
+	err := fmt.Errorf("token: %s; session: %s", err1.Error(), err2.Error())
+	newErrorResponse(c, http.StatusUnauthorized, "authMiddleware", "authorize error", err)
+}
+
+func (h *Handler) authWithToken(c *gin.Context) error {
 	token, err := getTokenFromRequest(c)
 	if err != nil {
-		newErrorResponse(c, http.StatusUnauthorized, "authMiddleware", "get token error", err)
-		return
+		return err
 	}
 
 	userId, err := h.services.GetUserService().ParseToken(c.Request.Context(), token)
 	if err != nil {
-		newErrorResponse(c, http.StatusUnauthorized, "authMiddleware", "service error", err)
+		return err
 	}
 
-	ctx := context.WithValue(c.Request.Context(), domain.UserIdKey, userId)
-	c.Request = c.Request.WithContext(ctx)
+	withUserId(c, userId)
 
-	c.Next()
+	return nil
+}
+
+func (h *Handler) authWithSession(c *gin.Context) error {
+	userId, err := h.services.GetUserService().GetSession(c)
+	if err != nil {
+		return err
+	}
+
+	withUserId(c, userId)
+
+	return nil
 }
 
 func getTokenFromRequest(c *gin.Context) (string, error) {
@@ -62,4 +89,9 @@ func getTokenFromRequest(c *gin.Context) (string, error) {
 	}
 
 	return headerParts[1], nil
+}
+
+func withUserId(c *gin.Context, userId int64) {
+	ctx := context.WithValue(c.Request.Context(), domain.UserIdKey, userId)
+	c.Request = c.Request.WithContext(ctx)
 }

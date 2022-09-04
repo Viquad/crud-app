@@ -9,11 +9,13 @@ import (
 
 	"github.com/Viquad/crud-app/internal/repository/psql"
 	"github.com/Viquad/crud-app/internal/service"
+	"github.com/Viquad/crud-app/internal/transport/grpc"
 	"github.com/Viquad/crud-app/internal/transport/rest"
 	"github.com/Viquad/crud-app/pkg/config"
 	"github.com/Viquad/crud-app/pkg/database"
 	"github.com/Viquad/crud-app/pkg/hash"
 	cache "github.com/Viquad/simple-cache"
+	"github.com/antonlindstrom/pgstore"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 )
@@ -65,10 +67,26 @@ func Run() {
 
 	defer db.Close()
 
-	hasher := hash.NewSHA1Hasher("TODO:MoveItToConfig")
+	store, err := pgstore.NewPGStoreFromPool(db, []byte(cfg.Secret))
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"context": "app.Run()",
+			"problem": "can't create sessions store",
+		}).Fatal(err.Error())
+	}
+
+	audit, err := grpc.NewAuditClient(cfg.Audit.Address)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"context": "app.Run()",
+			"problem": "can't connect do audit service",
+		}).Error(err.Error())
+	}
+
+	hasher := hash.NewSHA1Hasher(cfg.Secret)
 	cache := cache.NewMemoryCache()
 	repo := psql.NewRepositories(db)
-	services := service.NewServices(repo, cache, hasher, []byte("TODO:MoveItToConfig"), cfg.Cache.TTL, cfg.Auth.AccessTokenTTL, cfg.Auth.RefreshTokenTTL)
+	services := service.NewServices(repo, cache, store, hasher, audit, []byte(cfg.Secret), cfg.Cache.TTL, cfg.Auth.AccessTokenTTL, cfg.Auth.RefreshTokenTTL)
 	handler := rest.NewHandler(services)
 
 	router := handler.InitRouter()
