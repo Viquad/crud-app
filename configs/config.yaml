@@ -1,5 +1,5 @@
 db:
-  host: "db"
+  host: "crud_app_db"
   port: "5432"
   username: "postgres"
   db_name: "postgres"

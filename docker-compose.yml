@@ -13,6 +13,8 @@ services:
       - db
     env_file:
       - ./.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   db:
     container_name: crud_app_db
